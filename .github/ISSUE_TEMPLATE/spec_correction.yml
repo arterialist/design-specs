@@ -1,0 +1,26 @@
+name: Report specification error or update
+description: Report an inaccurate token, broken link, or layout issue in an existing design
+title: "Fix: [Design name] - [Issue summary]"
+labels: ["bug"]
+body:
+  - type: input
+    id: spec_file
+    attributes:
+      label: Specification path
+      placeholder: e.g. designs/broadsheet-audit/design.md
+    validations:
+      required: true
+  - type: textarea
+    id: problem_description
+    attributes:
+      label: Description of issue
+      description: Explain what token, rule, or section is inaccurate or unclear.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_fix
+    attributes:
+      label: Proposed fix
+      description: What should the rule or token value be updated to?
+    validations:
+      required: true

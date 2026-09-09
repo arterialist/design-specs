@@ -1,0 +1,45 @@
+name: Propose new design specification
+description: Propose a new interface design specification to add to the catalogue
+title: "Design: [Name of Design]"
+labels: ["new-design"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a new design specification for the catalogue.
+        Every entry must adhere to Google's DESIGN.md specification.
+  - type: input
+    id: design_name
+    attributes:
+      label: Design name
+      placeholder: e.g. Terminal Ledger
+    validations:
+      required: true
+  - type: textarea
+    id: visual_character
+    attributes:
+      label: Visual character
+      description: One or two sentences describing the visual identity and aesthetic principles.
+      placeholder: e.g. Monospaced green-on-black terminal layout with bordered panels and live telemetry.
+    validations:
+      required: true
+  - type: textarea
+    id: core_components
+    attributes:
+      label: Core components & signature elements
+      description: List the distinctive components (e.g. data tables, sparkline grids, sliders).
+    validations:
+      required: true
+  - type: checkboxes
+    id: compliance
+    attributes:
+      label: Compliance checklist
+      options:
+        - label: Follows Google's DESIGN.md standard with machine-readable YAML frontmatter
+          required: true
+        - label: Follows the 8 canonical sections in exact sequence
+          required: true
+        - label: Contains only reusable design rules with zero project-specific data
+          required: true
+        - label: Avoids AI tells and em dashes
+          required: true

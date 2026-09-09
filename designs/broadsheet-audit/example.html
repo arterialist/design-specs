@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Broadsheet audit — example report</title>
+  <style>
+    :root {
+      --primary: #000000;
+      --bg: #ffffff;
+      --text-muted: #555555;
+      --charcoal: #333333;
+      --grid-line: #dddddd;
+      --gap-text: #b3261e;
+      --gap-bg: #f9e2df;
+      --ok-text: #1e7d3c;
+      --ok-bg: #dff3e4;
+      --serif: Georgia, "Times New Roman", serif;
+      --mono: Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--bg); color: var(--primary); }
+    body {
+      max-width: 1180px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem;
+      font: 14.5px/1.45 var(--serif);
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      font-weight: normal;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 0.3rem;
+      margin: 0 0 0.3rem;
+    }
+
+    h2 {
+      font-size: 1.12rem;
+      font-weight: normal;
+      border-bottom: 1px solid var(--primary);
+      padding-bottom: 0.15rem;
+      margin: 2rem 0 0.5rem;
+    }
+
+    h3 {
+      font-size: 0.98rem;
+      font-weight: bold;
+      margin: 1.2rem 0 0.3rem;
+    }
+
+    p.meta {
+      font-size: 0.88rem;
+      margin: 0 0 0.8rem;
+    }
+
+    p.caption {
+      font-size: 0.85rem;
+      margin: 0.2rem 0 0.4rem;
+      color: var(--charcoal);
+    }
+
+    p, li { max-width: 100%; margin-bottom: 0.6rem; }
+
+    nav {
+      font-size: 0.86rem;
+      margin: 0.6rem 0 1rem;
+    }
+
+    nav a {
+      margin-right: 0.9rem;
+      color: var(--primary);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      border: 2px solid var(--primary);
+      margin: 0.8rem 0 1.4rem;
+      background: #fff;
+    }
+
+    .strip div {
+      padding: 0.5rem 0.7rem;
+      border-right: 1px solid var(--primary);
+    }
+
+    .strip div:last-child {
+      border-right: none;
+    }
+
+    .strip .big {
+      font-size: 1.7rem;
+      line-height: 1.1;
+    }
+
+    .strip .lbl {
+      font-size: 0.78rem;
+      color: var(--charcoal);
+      margin-top: 2px;
+    }
+
+    .legend {
+      margin: 0.6rem 0 1rem;
+      font-size: 0.82rem;
+    }
+
+    .legend span {
+      display: inline-block;
+      margin-right: 1.2rem;
+    }
+
+    .sw {
+      display: inline-block;
+      width: 12px;
+      height: 10px;
+      vertical-align: middle;
+      margin-right: 5px;
+      border: 1px solid var(--primary);
+    }
+
+    .tw {
+      overflow-x: auto;
+      margin: 0.4rem 0 1rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.86rem;
+      margin: 0;
+    }
+
+    th, td {
+      border: 1px solid var(--primary);
+      padding: 0.25rem 0.45rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: normal;
+    }
+
+    td {
+      max-width: 34ch;
+      overflow-wrap: anywhere;
+    }
+
+    td.n {
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    table.kv td:first-child {
+      width: 22%;
+      font-weight: bold;
+    }
+
+    .gap { color: var(--gap-text); font-weight: bold; }
+    .ok { color: var(--ok-text); font-weight: bold; }
+    .cell-gap { background: var(--gap-bg); color: var(--gap-text); font-weight: bold; }
+    .cell-ok { background: var(--ok-text-bg, #dff3e4); color: var(--ok-text); font-weight: bold; }
+    .cell-part { background: #ffffff; }
+
+    .tl {
+      display: grid;
+      grid-template-columns: 190px repeat(6, 1fr);
+      gap: 2px;
+      border: 2px solid var(--primary);
+      padding: 0.4rem;
+      margin: 0.8rem 0 0.3rem;
+      align-items: stretch;
+      background: #fff;
+    }
+
+    .tlh {
+      font-size: 0.78rem;
+      text-align: center;
+      border-bottom: 1px solid var(--primary);
+      padding-bottom: 0.15rem;
+    }
+
+    .tll {
+      font-size: 0.82rem;
+      padding: 0.3rem 0.4rem 0.3rem 0;
+      grid-column: 1;
+    }
+
+    .bar {
+      font-size: 0.72rem;
+      padding: 0.3rem 0.4rem;
+      border: 1px solid var(--primary);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      margin: 0.15rem 0;
+    }
+
+    .bar.build { background: var(--primary); color: #ffffff; }
+    .bar.warm { background: #bbbbbb; color: var(--primary); }
+    .bar.off { background: #ffffff; color: var(--text-muted); }
+
+    svg.waterfall {
+      display: block;
+      border: 1px solid var(--primary);
+      margin: 0.4rem 0 1rem;
+      background: #fff;
+      font: 11px var(--mono);
+    }
+
+    code, pre {
+      font: 0.82rem/1.4 var(--mono);
+    }
+
+    pre {
+      border: 1px solid var(--primary);
+      padding: 0.5rem 0.7rem;
+      overflow-x: auto;
+      margin: 0.6rem 0;
+    }
+
+    details {
+      margin: 0.5rem 0;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin: 0.3rem 0;
+    }
+
+    details table {
+      font-size: 0.78rem;
+    }
+
+    details td {
+      max-width: 28ch;
+    }
+
+    @media (max-width: 900px) {
+      .strip { grid-template-columns: repeat(3, 1fr); }
+      .tl { grid-template-columns: 120px repeat(6, 1fr); }
+      .bar { font-size: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Infrastructure verification and execution audit</h1>
+  <p class="meta">
+    Comprehensive architectural telemetry report. Evaluation covers worker nodes, latency waterfalls, database round-trips, and service contracts.
+  </p>
+
+  <nav>
+    <a href="#summary">Summary</a>
+    <a href="#matrix">Service matrix</a>
+    <a href="#waterfall">Execution waterfall</a>
+    <a href="#pipeline">Pipeline stages</a>
+    <a href="#details">Raw inventory</a>
+  </nav>
+
+  <div class="strip" id="summary">
+    <div><div class="big">12</div><div class="lbl">Primary pipelines</div></div>
+    <div><div class="big">48</div><div class="lbl">Worker nodes</div></div>
+    <div><div class="big">284</div><div class="lbl">Registered endpoints</div></div>
+    <div><div class="big">14.2s</div><div class="lbl">Peak turn time</div></div>
+    <div><div class="big">98.4%</div><div class="lbl">Verified coverage</div></div>
+    <div><div class="big">0</div><div class="lbl">Unresolved panics</div></div>
+  </div>
+
+  <p class="legend">
+    <span><i class="sw cell-ok"></i>Verified / covered</span>
+    <span><i class="sw cell-gap"></i>Deficit / gap</span>
+    <span><i class="sw cell-part"></i>Neutral</span>
+    <span><i class="sw" style="background:#000;"></i>Compute span</span>
+    <span><i class="sw" style="background:#bbb;"></i>Network round-trip</span>
+    <span><i class="sw" style="background:repeating-linear-gradient(45deg,#000 0 2px,#fff 2px 5px)"></i>Storage query</span>
+  </p>
+
+  <h2>Service verification status</h2>
+  <div class="tw" id="matrix">
+    <table>
+      <thead>
+        <tr>
+          <th>Subsystem</th>
+          <th>Protocol</th>
+          <th>P50 (ms)</th>
+          <th>P95 (ms)</th>
+          <th>Error rate</th>
+          <th>Verification</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Routing dispatcher</td>
+          <td>HTTP/2 JSON</td>
+          <td class="n">48</td>
+          <td class="n">112</td>
+          <td class="n">0.00%</td>
+          <td class="cell-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>Session store</td>
+          <td>PostgreSQL wire</td>
+          <td class="n">4</td>
+          <td class="n">18</td>
+          <td class="n">0.02%</td>
+          <td class="cell-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>Context aggregator</td>
+          <td>Async RPC</td>
+          <td class="n">340</td>
+          <td class="n">1,480</td>
+          <td class="n">0.14%</td>
+          <td class="cell-ok">Verified</td>
+        </tr>
+        <tr>
+          <td>Vector similarity search</td>
+          <td>gRPC streaming</td>
+          <td class="n">820</td>
+          <td class="n">3,410</td>
+          <td class="n">1.82%</td>
+          <td class="cell-gap">High latency gap</td>
+        </tr>
+        <tr>
+          <td>Telemetry stream forwarder</td>
+          <td>UDP socket</td>
+          <td class="n">1</td>
+          <td class="n">3</td>
+          <td class="n">0.00%</td>
+          <td class="cell-ok">Verified</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Hierarchical trace waterfall</h2>
+  <p class="caption">Measured execution spans for pipeline turn 142. Dashed boundaries denote parent node execution.</p>
+  <div class="tw" id="waterfall">
+    <svg class="waterfall" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 320" width="100%">
+      <defs>
+        <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="5" height="5" fill="#ffffff"/>
+          <line x1="0" y1="0" x2="0" y2="5" stroke="#000000" stroke-width="2"/>
+        </pattern>
+      </defs>
+
+      <text x="10" y="20" style="font-family:Georgia,serif; font-size:12px; font-weight:bold;">Total turn duration: 12.4 s</text>
+
+      <line x1="220" y1="35" x2="220" y2="295" stroke="#dddddd"/>
+      <text x="220" y="310" text-anchor="middle" fill="#666666">0s</text>
+
+      <line x1="370" y1="35" x2="370" y2="295" stroke="#dddddd"/>
+      <text x="370" y="310" text-anchor="middle" fill="#666666">3s</text>
+
+      <line x1="520" y1="35" x2="520" y2="295" stroke="#dddddd"/>
+      <text x="520" y="310" text-anchor="middle" fill="#666666">6s</text>
+
+      <line x1="670" y1="35" x2="670" y2="295" stroke="#dddddd"/>
+      <text x="670" y="310" text-anchor="middle" fill="#666666">9s</text>
+
+      <line x1="820" y1="35" x2="820" y2="295" stroke="#dddddd"/>
+      <text x="820" y="310" text-anchor="middle" fill="#666666">12s</text>
+
+      <!-- Row 1: Checkpoint load -->
+      <text x="10" y="52">state.checkpoint_get</text>
+      <rect x="220" y="42" width="22" height="12" fill="#ffffff" stroke="#000000"/>
+      <text x="250" y="52" fill="#333333">440 ms</text>
+
+      <!-- Row 2: Supervisor parent node -->
+      <text x="10" y="76" style="font-weight:bold;">SUPERVISOR_NODE</text>
+      <rect x="242" y="66" width="580" height="15" fill="none" stroke="#000000" stroke-dasharray="3,2"/>
+      <text x="830" y="78" fill="#333333">11,600 ms</text>
+
+      <!-- Row 3: Vector search -->
+      <text x="20" y="102">context.vector_search</text>
+      <rect x="250" y="92" width="60" height="12" fill="#666666"/>
+      <text x="318" y="102" fill="#333333">1,200 ms</text>
+
+      <!-- Row 4: Database query batch -->
+      <text x="20" y="128">store.load_entities</text>
+      <rect x="312" y="118" width="85" height="12" fill="url(#hatch)" stroke="#000000"/>
+      <text x="405" y="128" fill="#333333">1,700 ms</text>
+
+      <!-- Row 5: Remote API sync -->
+      <text x="20" y="154">remote.sync_client</text>
+      <rect x="400" y="144" width="35" height="12" fill="#bbbbbb" stroke="#000000"/>
+      <text x="442" y="154" fill="#333333">700 ms</text>
+
+      <!-- Row 6: Primary inference -->
+      <text x="20" y="180">model.execute_turn</text>
+      <rect x="438" y="170" width="280" height="12" fill="#000000"/>
+      <text x="726" y="180" fill="#333333">5,600 ms</text>
+
+      <!-- Row 7: Output evaluation -->
+      <text x="20" y="206">evaluator.validate</text>
+      <rect x="720" y="196" width="95" height="12" fill="#666666"/>
+      <text x="822" y="206" fill="#333333">1,900 ms</text>
+
+      <!-- Row 8: Checkpoint persist -->
+      <text x="10" y="232">state.checkpoint_save</text>
+      <rect x="816" y="222" width="25" height="12" fill="#ffffff" stroke="#000000"/>
+      <text x="848" y="232" fill="#333333">500 ms</text>
+    </svg>
+  </div>
+
+  <h2>Scheduled execution matrix</h2>
+  <div class="tw" id="pipeline">
+    <div class="tl">
+      <div class="tlh" style="grid-column:1;">Worker pipeline</div>
+      <div class="tlh">00:00</div>
+      <div class="tlh">04:00</div>
+      <div class="tlh">08:00</div>
+      <div class="tlh">12:00</div>
+      <div class="tlh">16:00</div>
+      <div class="tlh">20:00</div>
+
+      <div class="tll">worker-ingest-alpha</div>
+      <div class="bar build">batch-run</div>
+      <div class="bar warm">standby</div>
+      <div class="bar build">batch-run</div>
+      <div class="bar off">idle</div>
+      <div class="bar warm">standby</div>
+      <div class="bar build">batch-run</div>
+
+      <div class="tll">worker-eval-beta</div>
+      <div class="bar off">idle</div>
+      <div class="bar build">sweep</div>
+      <div class="bar off">idle</div>
+      <div class="bar build">sweep</div>
+      <div class="bar off">idle</div>
+      <div class="bar build">sweep</div>
+
+      <div class="tll">worker-sync-gamma</div>
+      <div class="bar warm">standby</div>
+      <div class="bar off">idle</div>
+      <div class="bar warm">standby</div>
+      <div class="bar warm">standby</div>
+      <div class="bar build">reindex</div>
+      <div class="bar off">idle</div>
+    </div>
+  </div>
+
+  <h2>Audit disclosures</h2>
+  <div id="details">
+    <details>
+      <summary>Database connection pooling audit (click to expand)</summary>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Pool ID</th>
+              <th>Host region</th>
+              <th>Active connections</th>
+              <th>Max limit</th>
+              <th>Queue delay</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>pool-us-east</td>
+              <td>us-east-1</td>
+              <td class="n">18</td>
+              <td class="n">50</td>
+              <td class="n">1.2 ms</td>
+            </tr>
+            <tr>
+              <td>pool-ap-southeast</td>
+              <td>ap-southeast-1</td>
+              <td class="n">42</td>
+              <td class="n">50</td>
+              <td class="n">14.8 ms</td>
+            </tr>
+            <tr>
+              <td>pool-eu-central</td>
+              <td>eu-central-1</td>
+              <td class="n">11</td>
+              <td class="n">50</td>
+              <td class="n">0.8 ms</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details>
+      <summary>Execution environment configuration</summary>
+      <pre>KERNEL=Linux 6.6.137-cloud-amd64
+PYTHON_VERSION=3.11.9
+WORKER_POOL_CONCURRENCY=8
+STORAGE_BACKEND=postgresql://cluster-primary.internal:5432/telemetry
+READ_ONLY_GUARD=active (write operations blocked)</pre>
+    </details>
+  </div>
+</body>
+</html>

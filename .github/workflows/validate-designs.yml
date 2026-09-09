@@ -1,0 +1,86 @@
+name: Validate Design Specifications
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate all design specs
+        run: |
+          python3 -c "
+          import glob, sys, yaml, re, os
+
+          specs = sorted(glob.glob('designs/*/design.md'))
+          if not specs:
+              print('Error: No design specifications found under designs/')
+              sys.exit(1)
+
+          canonical_sections = [
+              'overview',
+              'colors',
+              'typography',
+              'layout',
+              'elevation & depth',
+              'shapes',
+              'components',
+              'do\'s and don\'ts'
+          ]
+
+          failed = False
+          for spec in specs:
+              print(f'==> Validating {spec}')
+              with open(spec, 'r', encoding='utf-8') as f:
+                  content = f.read()
+
+              parts = content.split('---', 2)
+              if len(parts) < 3:
+                  print(f'FAIL: {spec} lacks valid YAML frontmatter delimiters (---)')
+                  failed = True
+                  continue
+
+              fm_raw = parts[1]
+              body = parts[2]
+
+              try:
+                  data = yaml.safe_load(fm_raw)
+              except Exception as e:
+                  print(f'FAIL: {spec} YAML parse error: {e}')
+                  failed = True
+                  continue
+
+              required_keys = ['name', 'description', 'colors', 'typography', 'rounded', 'spacing', 'components']
+              for key in required_keys:
+                  if key not in data:
+                      print(f'FAIL: {spec} missing required frontmatter key: {key}')
+                      failed = True
+
+              h2_headings = [m.strip().lower() for m in re.findall(r'^##\s+(.+)$', body, re.M)]
+              if h2_headings != canonical_sections:
+                  print(f'FAIL: {spec} sections do not match canonical order.')
+                  print(f'  Found: {h2_headings}')
+                  print(f'  Expected: {canonical_sections}')
+                  failed = True
+
+              if '—' in content:
+                  print(f'FAIL: {spec} contains em dashes (use commas or periods)')
+                  failed = True
+
+          if failed:
+              sys.exit(1)
+          print('All design specifications pass validation.')
+          "

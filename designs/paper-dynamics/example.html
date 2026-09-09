@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper dynamics — example interface</title>
+  <style>
+    :root {
+      --bg: #f7f5ef;
+      --text: #24251f;
+      --wash: #eeede4;
+      --outline: #c4c4b6;
+      --diagram-outline: #bcbeb0;
+      --muted: #5e6056;
+      --blue: #245d79;
+      --rust: #984526;
+      --sans: "Avenir Next", Verdana, sans-serif;
+      --serif: Georgia, serif;
+      --mono: Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    ::selection {
+      background: var(--blue);
+      color: #ffffff;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .paper-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('assets/paper.webp');
+      background-size: 768px 512px;
+      opacity: 0.55;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .masthead-wrapper {
+      max-width: 1536px;
+      margin: 0 auto;
+      padding: 16px 40px 0;
+    }
+
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--outline);
+    }
+
+    .masthead-title {
+      font-size: 18px;
+      line-height: 27px;
+      font-weight: 700;
+    }
+
+    .masthead-desc {
+      font-weight: 400;
+      color: var(--muted);
+      margin-left: 12px;
+      font-size: 14px;
+    }
+
+    .masthead-link, a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .masthead-link:hover, a:hover {
+      color: var(--blue);
+    }
+
+    a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 40px 48px;
+    }
+
+    .heading-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 24px;
+      margin: 24px 0 12px;
+    }
+
+    .main-heading {
+      font-size: 24px;
+      line-height: 31.2px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .opening-explanation {
+      font-family: var(--serif);
+      font-size: 16px;
+      line-height: 24px;
+      max-width: 92ch;
+      margin-bottom: 24px;
+    }
+
+    .opening-explanation em {
+      font-style: italic;
+    }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    select {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--outline);
+      border-radius: 2px;
+      padding: 7px 12px;
+      height: 44px;
+      font-family: var(--sans);
+      font-size: 14px;
+    }
+
+    button {
+      font-family: var(--sans);
+      font-size: 14px;
+      border-radius: 2px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      min-width: 112px;
+      height: 44px;
+      padding: 0 16px;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover {
+      background: var(--blue);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--outline);
+      min-height: 44px;
+      padding: 9px 14px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--wash);
+      border-color: var(--text);
+    }
+
+    .btn-primary:active, .btn-secondary:active {
+      transform: translateY(1px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn-primary:active, .btn-secondary:active {
+        transform: none;
+      }
+    }
+
+    .canvas-container {
+      width: 100%;
+      height: 640px;
+      border-top: 1px solid var(--outline);
+      border-bottom: 1px solid var(--outline);
+      position: relative;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .canvas-container:active {
+      cursor: grabbing;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .meta-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-indicator {
+      width: 12px;
+      height: 2px;
+    }
+
+    .indicator-blue { background: var(--blue); }
+    .indicator-rust { background: var(--rust); }
+
+    .timeline-container {
+      margin: 12px 0 24px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 36px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+
+    .tick-readout {
+      font-family: var(--mono);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .shortcuts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .shortcut-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: var(--text);
+      min-height: 36px;
+    }
+
+    .shortcut-btn:hover {
+      color: var(--blue);
+    }
+
+    .shortcut-btn.selected {
+      text-decoration: none;
+      background: var(--wash);
+      border-color: var(--outline);
+    }
+
+    .reading-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin: 16px 0 28px;
+    }
+
+    .reading-col h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .reading-col p {
+      font-size: 14px;
+      line-height: 21px;
+      max-width: 76ch;
+      margin-bottom: 12px;
+    }
+
+    .exact-readouts {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 19.2px;
+      background: transparent;
+    }
+
+    .readout-line {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dotted var(--outline);
+      padding: 3px 0;
+    }
+
+    .closing-section {
+      border-top: 1px dashed var(--text);
+      padding-top: 20px;
+      margin-top: 20px;
+      margin-bottom: 32px;
+    }
+
+    .closing-section h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .closing-section p {
+      font-size: 15px;
+      line-height: 22.5px;
+      max-width: 76ch;
+    }
+
+    @media (max-width: 1000px) {
+      .masthead-wrapper, .container {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .masthead-wrapper, .container {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .masthead {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .masthead-desc {
+        margin-left: 0;
+        display: block;
+      }
+      .heading-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .main-heading {
+        font-size: 20px;
+        line-height: 26px;
+      }
+      .canvas-container {
+        height: 520px;
+      }
+      .reading-columns {
+        grid-template-columns: 1fr;
+      }
+      .control-row {
+        gap: 8px;
+      }
+      .shortcut-btn {
+        min-height: 44px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="paper-overlay"></div>
+
+  <div class="masthead-wrapper">
+    <header class="masthead">
+      <div>
+        <span class="masthead-title">Dynamical Systems Registry</span>
+        <span class="masthead-desc">Laboratory reference series</span>
+      </div>
+      <div>
+        <a href="#about" class="masthead-link">Documentation</a>
+      </div>
+    </header>
+  </div>
+
+  <main class="container">
+    <div class="heading-row">
+      <h1 class="main-heading">Coupled limit cycles in dual-channel oscillators</h1>
+      <a href="#export" class="masthead-link">Export session</a>
+    </div>
+
+    <p class="opening-explanation">
+      This study observes phase locking and transient chaos across four stacked spatial planes.
+      <em>Channel 1</em> records the fast activator potential, while <em>channel 2</em> follows the slow recovery variable.
+      Measurements below correspond to tick 142 of 300.
+    </p>
+
+    <div class="control-row">
+      <button id="btn-play" class="btn-primary">Play</button>
+      <button id="btn-step" class="btn-secondary">Step</button>
+      <button id="btn-rotate" class="btn-secondary">Rotate view</button>
+      <button id="btn-reset" class="btn-secondary">Reset view</button>
+
+      <div class="control-group" style="margin-left: auto;">
+        <label for="regime-select" class="control-label">Regime:</label>
+        <select id="regime-select">
+          <option>Coupled Limit Cycle</option>
+          <option>Period Doubling</option>
+          <option>Intermittent Bursting</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="speed-select" class="control-label">Rate:</label>
+        <select id="speed-select">
+          <option>12 ticks / s</option>
+          <option>24 ticks / s</option>
+          <option>6 ticks / s</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="canvas-container" id="canvas-container">
+      <canvas id="plot-canvas"></canvas>
+    </div>
+
+    <div class="meta-bar">
+      <span>Drag to rotate, scroll to zoom</span>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-indicator indicator-blue"></span>Channel 1 (Activator)</span>
+        <span class="legend-item"><span class="legend-indicator indicator-rust"></span>Channel 2 (Inhibitor)</span>
+      </div>
+    </div>
+
+    <div class="timeline-container">
+      <div class="slider-row">
+        <input type="range" id="seek-slider" min="0" max="299" value="142">
+        <span class="tick-readout" id="tick-readout">tick 142 / 300</span>
+      </div>
+      <div class="shortcuts">
+        <button class="shortcut-btn" data-tick="0">0: Initial state</button>
+        <button class="shortcut-btn selected" data-tick="142">142: Phase lock onset</button>
+        <button class="shortcut-btn" data-tick="210">210: Peak divergence</button>
+        <button class="shortcut-btn" data-tick="299">299: Basin settling</button>
+      </div>
+    </div>
+
+    <div class="reading-columns">
+      <div class="reading-col">
+        <h3>Trajectory interpretation</h3>
+        <p>
+          The uppermost plane monitors the driving oscillator, which maintains a stable periodic orbit with minimal dispersion. Lower planes exhibit increasing phase lag and amplitude distortion as the coupling coefficient weakens.
+        </p>
+        <p>
+          At tick 142, the dashed alignment cursor crosses all four planes simultaneously, confirming synchronous phase onset across the physical stack despite the non-uniform amplitudes.
+        </p>
+      </div>
+
+      <div class="reading-col">
+        <h3>Current telemetry readouts</h3>
+        <div class="exact-readouts">
+          <div class="readout-line">
+            <span>Plane 1 (Drive node)</span>
+            <span id="val-p1">+0.84210 V / -0.12051 A</span>
+          </div>
+          <div class="readout-line">
+            <span>Plane 2 (Primary coupler)</span>
+            <span id="val-p2">+0.63124 V / -0.25890 A</span>
+          </div>
+          <div class="readout-line">
+            <span>Plane 3 (Secondary coupler)</span>
+            <span id="val-p3">+0.31055 V / -0.41209 A</span>
+          </div>
+          <div class="readout-line">
+            <span>Plane 4 (Boundary sink)</span>
+            <span id="val-p4">-0.11904 V / -0.58912 A</span>
+          </div>
+          <div class="readout-line">
+            <span>Inter-plane coherence</span>
+            <span id="val-coherence">0.96412</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="closing-section">
+      <h3>Experimental observations</h3>
+      <p>
+        The observed trajectories demonstrate that equal geometric heights on different planes do not imply equal physical amplitudes. Each plane tracks its independent voltage range while sharing the temporal cursor. Complete traces remain visible throughout the full recording window to facilitate comparison against the active sample.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('plot-canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+
+    let yaw = -0.32;
+    let pitch = 0.38;
+    let zoom = 1.0;
+    let currentTick = 142;
+    let isPlaying = false;
+    let playInterval = null;
+
+    const planes = [
+      { name: 'Plane 1: Drive Node', range: '[-1.2V, +1.5V]', desc: 'Direct excitation' },
+      { name: 'Plane 2: Primary Coupler', range: '[-1.0V, +1.2V]', desc: 'Inductive bridge' },
+      { name: 'Plane 3: Secondary Coupler', range: '[-0.8V, +1.0V]', desc: 'Resistive delay' },
+      { name: 'Plane 4: Boundary Sink', range: '[-0.5V, +0.8V]', desc: 'Ground return' }
+    ];
+
+    const totalTicks = 300;
+    const waveData = [];
+
+    for (let p = 0; p < 4; p++) {
+      const pData = { blue: [], rust: [] };
+      const phaseOffset = p * 0.45;
+      const decay = 1 - p * 0.15;
+      for (let t = 0; t < totalTicks; t++) {
+        const theta = (t / 18) + phaseOffset;
+        pData.blue.push(Math.sin(theta) * 0.7 * decay);
+        pData.rust.push(Math.cos(theta * 0.8) * 0.5 * decay);
+      }
+      waveData.push(pData);
+    }
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      render();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function project(x, y, z, cx, cy, scale) {
+      const cosY = Math.cos(yaw);
+      const sinY = Math.sin(yaw);
+      const x1 = x * cosY - z * sinY;
+      const z1 = z * cosY + x * sinY;
+
+      const cosP = Math.cos(pitch);
+      const sinP = Math.sin(pitch);
+      const y2 = y * cosP - z1 * sinP;
+      const z2 = z1 * cosP + y * sinP;
+
+      const px = cx + x1 * scale;
+      const py = cy + y2 * scale;
+      return { x: px, y: py, z: z2 };
+    }
+
+    function render() {
+      const rect = container.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w * 0.52;
+      const cy = h * 0.54;
+      const baseScale = Math.min(w / 1050, h / 590) * zoom;
+
+      const planeWidth = 580;
+      const planeDepth = 200;
+      const planeSpacing = 120;
+
+      const samplePts = [];
+
+      planes.forEach((plane, idx) => {
+        const yOffset = (idx - 1.5) * planeSpacing;
+
+        const corners = [
+          project(-planeWidth / 2, yOffset, -planeDepth / 2, cx, cy, baseScale),
+          project(planeWidth / 2, yOffset, -planeDepth / 2, cx, cy, baseScale),
+          project(planeWidth / 2, yOffset, planeDepth / 2, cx, cy, baseScale),
+          project(-planeWidth / 2, yOffset, planeDepth / 2, cx, cy, baseScale)
+        ];
+
+        ctx.strokeStyle = '#bcbeb0';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(corners[0].x, corners[0].y);
+        for (let i = 1; i < 4; i++) ctx.lineTo(corners[i].x, corners[i].y);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.fillStyle = '#24251f';
+        ctx.font = '600 13px "Avenir Next", Verdana, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(plane.name, corners[0].x - 18, corners[0].y + 4);
+
+        ctx.fillStyle = '#5e6056';
+        ctx.font = '400 11px "Avenir Next", Verdana, sans-serif';
+        ctx.fillText(plane.desc, corners[0].x - 18, corners[0].y + 18);
+
+        ctx.font = '400 10px Menlo, monospace';
+        ctx.fillText(plane.range, corners[0].x - 18, corners[0].y + 30);
+
+        const data = waveData[idx];
+
+        ctx.strokeStyle = '#245d79';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        for (let t = 0; t < totalTicks; t++) {
+          const px = -planeWidth / 2 + (t / totalTicks) * planeWidth;
+          const pz = -planeDepth * 0.2 + data.blue[t] * (planeDepth * 0.35);
+          const pt = project(px, yOffset, pz, cx, cy, baseScale);
+          if (t === 0) ctx.moveTo(pt.x, pt.y);
+          else ctx.lineTo(pt.x, pt.y);
+        }
+        ctx.stroke();
+
+        ctx.strokeStyle = '#984526';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        for (let t = 0; t < totalTicks; t++) {
+          const px = -planeWidth / 2 + (t / totalTicks) * planeWidth;
+          const pz = planeDepth * 0.2 + data.rust[t] * (planeDepth * 0.35);
+          const pt = project(px, yOffset, pz, cx, cy, baseScale);
+          if (t === 0) ctx.moveTo(pt.x, pt.y);
+          else ctx.lineTo(pt.x, pt.y);
+        }
+        ctx.stroke();
+
+        const curPx = -planeWidth / 2 + (currentTick / totalTicks) * planeWidth;
+        const curBluePz = -planeDepth * 0.2 + data.blue[currentTick] * (planeDepth * 0.35);
+        const curRustPz = planeDepth * 0.2 + data.rust[currentTick] * (planeDepth * 0.35);
+
+        const ptBlue = project(curPx, yOffset, curBluePz, cx, cy, baseScale);
+        const ptRust = project(curPx, yOffset, curRustPz, cx, cy, baseScale);
+
+        samplePts.push(ptBlue);
+
+        ctx.fillStyle = '#24251f';
+        ctx.beginPath();
+        ctx.arc(ptBlue.x, ptBlue.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(ptRust.x, ptRust.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        const cursorTop = project(curPx, yOffset, -planeDepth / 2, cx, cy, baseScale);
+        const cursorBottom = project(curPx, yOffset, planeDepth / 2, cx, cy, baseScale);
+
+        ctx.strokeStyle = '#24251f';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath();
+        ctx.moveTo(cursorTop.x, cursorTop.y);
+        ctx.lineTo(cursorBottom.x, cursorBottom.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      if (samplePts.length > 1) {
+        ctx.strokeStyle = '#24251f';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 6]);
+        ctx.beginPath();
+        ctx.moveTo(samplePts[0].x, samplePts[0].y);
+        for (let i = 1; i < samplePts.length; i++) {
+          ctx.lineTo(samplePts[i].x, samplePts[i].y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    let isDragging = false;
+    let prevX = 0;
+    let prevY = 0;
+
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      prevX = e.clientX;
+      prevY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - prevX;
+      const dy = e.clientY - prevY;
+      prevX = e.clientX;
+      prevY = e.clientY;
+
+      yaw += dx * 0.005;
+      pitch += dy * 0.005;
+      pitch = Math.max(-1.2, Math.min(1.2, pitch));
+      render();
+    });
+
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      zoom += e.deltaY * -0.001;
+      zoom = Math.max(0.55, Math.min(1.5, zoom));
+      render();
+    }, { passive: false });
+
+    const btnPlay = document.getElementById('btn-play');
+    const btnStep = document.getElementById('btn-step');
+    const btnRotate = document.getElementById('btn-rotate');
+    const btnReset = document.getElementById('btn-reset');
+    const seekSlider = document.getElementById('seek-slider');
+    const tickReadout = document.getElementById('tick-readout');
+
+    function updateTick(val) {
+      currentTick = parseInt(val, 10);
+      seekSlider.value = currentTick;
+      tickReadout.textContent = `tick ${currentTick} / ${totalTicks}`;
+
+      document.getElementById('val-p1').textContent = `+${(0.8421 - currentTick * 0.0012).toFixed(5)} V / -${(0.1205 + currentTick * 0.0008).toFixed(5)} A`;
+      document.getElementById('val-p2').textContent = `+${(0.6312 - currentTick * 0.0009).toFixed(5)} V / -${(0.2589 + currentTick * 0.0005).toFixed(5)} A`;
+      document.getElementById('val-p3').textContent = `+${(0.3105 - currentTick * 0.0004).toFixed(5)} V / -${(0.4120 + currentTick * 0.0002).toFixed(5)} A`;
+      document.getElementById('val-p4').textContent = `-${(0.1190 + currentTick * 0.0003).toFixed(5)} V / -${(0.5891 - currentTick * 0.0001).toFixed(5)} A`;
+      document.getElementById('val-coherence').textContent = (0.9641 - Math.sin(currentTick / 20) * 0.04).toFixed(5);
+
+      render();
+    }
+
+    seekSlider.addEventListener('input', (e) => {
+      updateTick(e.target.value);
+    });
+
+    btnPlay.addEventListener('click', () => {
+      if (isPlaying) {
+        clearInterval(playInterval);
+        isPlaying = false;
+        btnPlay.textContent = 'Play';
+      } else {
+        isPlaying = true;
+        btnPlay.textContent = 'Pause';
+        playInterval = setInterval(() => {
+          let next = (currentTick + 1) % totalTicks;
+          updateTick(next);
+        }, 1000 / 12);
+      }
+    });
+
+    btnStep.addEventListener('click', () => {
+      if (isPlaying) {
+        clearInterval(playInterval);
+        isPlaying = false;
+        btnPlay.textContent = 'Play';
+      }
+      let next = (currentTick + 1) % totalTicks;
+      updateTick(next);
+    });
+
+    btnRotate.addEventListener('click', () => {
+      yaw += 0.3;
+      render();
+    });
+
+    btnReset.addEventListener('click', () => {
+      yaw = -0.32;
+      pitch = 0.38;
+      zoom = 1.0;
+      render();
+    });
+
+    document.querySelectorAll('.shortcut-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.shortcut-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        updateTick(btn.getAttribute('data-tick'));
+      });
+    });
+
+    resizeCanvas();
+  </script>
+</body>
+</html>
