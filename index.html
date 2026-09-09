@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design specs: Public catalogue of interface designs</title>
+  <style>
+    :root {
+      --bg: #faf9f6;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: #555555;
+      --border: #e2dfd7;
+      --border-dark: #1a1a1a;
+      --accent: #245d79;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --mono: Menlo, Consolas, monospace;
+      --serif: Georgia, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.5;
+      padding: 0 1.5rem 4rem;
+    }
+
+    header {
+      max-width: 1180px;
+      margin: 3rem auto 2.5rem;
+      border-bottom: 2px solid var(--border-dark);
+      padding-bottom: 1.5rem;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links a {
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      font-weight: 500;
+      margin-left: 1.2rem;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 78ch;
+      line-height: 1.45;
+    }
+
+    .philosophy-strip {
+      max-width: 1180px;
+      margin: 0 auto 3rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--border-dark);
+      background: var(--surface);
+    }
+
+    .philosophy-cell {
+      padding: 1rem 1.2rem;
+      border-right: 1px solid var(--border-dark);
+    }
+
+    .philosophy-cell:last-child {
+      border-right: none;
+    }
+
+    .philosophy-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+
+    .philosophy-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .section-heading {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    .design-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 3.5rem;
+      margin-bottom: 4rem;
+    }
+
+    .design-card {
+      background: var(--surface);
+      border: 1px solid var(--border-dark);
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      overflow: hidden;
+    }
+
+    .design-info {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .design-header h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .design-char {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+      margin-bottom: 1.2rem;
+    }
+
+    .token-summary {
+      font-size: 0.82rem;
+      margin-bottom: 1.5rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.8rem 1rem;
+    }
+
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      border-bottom: 1px dotted var(--border);
+    }
+
+    .token-row:last-child {
+      border-bottom: none;
+    }
+
+    .token-key {
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .token-val {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .palette-strip {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .swatch {
+      width: 22px;
+      height: 22px;
+      border: 1px solid rgba(0,0,0,0.25);
+    }
+
+    .action-row {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--sans);
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 0.65rem 1.1rem;
+      border: 1px solid var(--border-dark);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--border-dark);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg);
+    }
+
+    .design-visual {
+      background: #eeeeee;
+      border-left: 1px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .design-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .guide-box {
+      background: var(--surface);
+      border: 1px solid var(--border-dark);
+      padding: 1.8rem 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .guide-box h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    .guide-box p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      max-width: 80ch;
+    }
+
+    .guide-box ol {
+      margin-left: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .guide-box li {
+      margin: 0.4rem 0;
+      color: var(--text);
+    }
+
+    pre.code-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.8rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      overflow-x: auto;
+    }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    footer a {
+      color: inherit;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 900px) {
+      .philosophy-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .philosophy-cell:nth-child(2) {
+        border-right: none;
+      }
+      .philosophy-cell:nth-child(1), .philosophy-cell:nth-child(2) {
+        border-bottom: 1px solid var(--border-dark);
+      }
+      .design-card {
+        grid-template-columns: 1fr;
+      }
+      .design-visual {
+        border-left: none;
+        border-top: 1px solid var(--border-dark);
+        min-height: 280px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .philosophy-strip {
+        grid-template-columns: 1fr;
+      }
+      .philosophy-cell {
+        border-right: none;
+        border-bottom: 1px solid var(--border-dark);
+      }
+      .philosophy-cell:last-child {
+        border-bottom: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="top-bar">
+      <h1>Design specs</h1>
+      <nav class="nav-links">
+        <a href="https://github.com/arterialist/design-specs">GitHub Repository</a>
+        <a href="https://raw.githubusercontent.com/google-labs-code/design.md/main/docs/spec.md">DESIGN.md Spec</a>
+      </nav>
+    </div>
+    <p class="subtitle">
+      A public catalogue of reusable interface design systems. Each specification captures visual rules, tokens, layout constraints, and component behaviors well enough to build an interface in that exact aesthetic.
+    </p>
+  </header>
+
+  <section class="philosophy-strip">
+    <div class="philosophy-cell">
+      <div class="philosophy-title">Data over prose</div>
+      <div class="philosophy-desc">Multi-paragraph narrative summaries are replaced by dense data tables, execution waterfalls, and telemetry sparklines.</div>
+    </div>
+    <div class="philosophy-cell">
+      <div class="philosophy-title">Instrument grade</div>
+      <div class="philosophy-desc">Every element serves an analytical purpose. Decorative icons, glowing trace effects, and functionless pills are prohibited.</div>
+    </div>
+    <div class="philosophy-cell">
+      <div class="philosophy-title">Zero AI fluff</div>
+      <div class="philosophy-desc">Labels and notes state concrete mechanisms and units. Conversational filler, greeting banners, and em dashes are eliminated.</div>
+    </div>
+    <div class="philosophy-cell">
+      <div class="philosophy-title">Local dependencies</div>
+      <div class="philosophy-desc">Typography relies on native system font stacks, avoiding third-party font downloads and runtime bloat.</div>
+    </div>
+  </section>
+
+  <main>
+    <h2 class="section-heading">Catalogue</h2>
+
+    <div class="design-grid">
+      <!-- 1. Paper dynamics -->
+      <article class="design-card">
+        <div class="design-info">
+          <div class="design-header">
+            <h2>Paper dynamics</h2>
+            <p class="design-char">
+              A paper-backed analytical interface with fine rules, restrained plots, and readable measurements. Built for studying changing signals, state-space trajectories, and coupled oscillators.
+            </p>
+          </div>
+
+          <div class="token-summary">
+            <div class="token-row">
+              <span class="token-key">Typography</span>
+              <span class="token-val">Avenir Next, Georgia, Menlo</span>
+            </div>
+            <div class="token-row">
+              <span class="token-key">Corner radius</span>
+              <span class="token-val">2px controls, 0px containers</span>
+            </div>
+            <div class="token-row">
+              <span class="token-key">Max container</span>
+              <span class="token-val">1600px desktop</span>
+            </div>
+            <div class="token-row">
+              <span class="token-key">Signature element</span>
+              <span class="token-val">3D wireframe plane stack</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="palette-strip">
+              <span class="swatch" style="background:#f7f5ef;" title="Warm paper (#f7f5ef)"></span>
+              <span class="swatch" style="background:#24251f;" title="Graphite (#24251f)"></span>
+              <span class="swatch" style="background:#eeede4;" title="Paper wash (#eeede4)"></span>
+              <span class="swatch" style="background:#c4c4b6;" title="Hairline grey (#c4c4b6)"></span>
+              <span class="swatch" style="background:#245d79;" title="Ink blue (#245d79)"></span>
+              <span class="swatch" style="background:#984526;" title="Burnt rust (#984526)"></span>
+            </div>
+
+            <div class="action-row">
+              <a href="designs/paper-dynamics/example.html" class="btn btn-primary">Open live example</a>
+              <a href="designs/paper-dynamics/design.md" class="btn btn-secondary">Read specification</a>
+            </div>
+          </div>
+        </div>
+        <div class="design-visual">
+          <img src="designs/paper-dynamics/preview.png" alt="Paper dynamics interface preview">
+        </div>
+      </article>
+
+      <!-- 2. Broadsheet audit -->
+      <article class="design-card">
+        <div class="design-info">
+          <div class="design-header">
+            <h2>Broadsheet audit</h2>
+            <p class="design-char">
+              A high-contrast black-and-white broadsheet with serif body text, ruled data tables, summary strips, execution waterfalls, and restrained semantic tinting. Built for diagnostic reporting and system audits.
+            </p>
+          </div>
+
+          <div class="token-summary">
+            <div class="token-row">
+              <span class="token-key">Typography</span>
+              <span class="token-val">Georgia, Menlo, Consolas</span>
+            </div>
+            <div class="token-row">
+              <span class="token-key">Corner radius</span>
+              <span class="token-val">0px unrounded geometry</span>
+            </div>
+            <div class="token-row">
+              <span class="token-key">Max container</span>
+              <span class="token-val">1180px broadsheet</span>
+            </div>
+            <div class="token-row">
+              <span class="token-key">Signature element</span>
+              <span class="token-val">SVG execution waterfall</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="palette-strip">
+              <span class="swatch" style="background:#000000;" title="Ink black (#000000)"></span>
+              <span class="swatch" style="background:#ffffff;" title="Pure white (#ffffff)"></span>
+              <span class="swatch" style="background:#dff3e4;" title="Pale mint (#dff3e4)"></span>
+              <span class="swatch" style="background:#1e7d3c;" title="Forest green (#1e7d3c)"></span>
+              <span class="swatch" style="background:#f9e2df;" title="Pale rose (#f9e2df)"></span>
+              <span class="swatch" style="background:#b3261e;" title="Crimson red (#b3261e)"></span>
+              <span class="swatch" style="background:#bbbbbb;" title="Mid grey (#bbbbbb)"></span>
+            </div>
+
+            <div class="action-row">
+              <a href="designs/broadsheet-audit/example.html" class="btn btn-primary">Open live example</a>
+              <a href="designs/broadsheet-audit/design.md" class="btn btn-secondary">Read specification</a>
+            </div>
+          </div>
+        </div>
+        <div class="design-visual">
+          <img src="designs/broadsheet-audit/preview.png" alt="Broadsheet audit interface preview">
+        </div>
+      </article>
+
+      <!-- 3. Systems benchmark -->
+      <article class="design-card">
+        <div class="design-info">
+          <div class="design-header">
+            <h2>Systems benchmark</h2>
+            <p class="design-char">
+              A high-density system sans-serif benchmark report with shaded tabular data, executive callout boxes, and responsive sparkline telemetry grids. Built for profiling regressions and memory allocations.
+            </p>
+          </div>
+
+          <div class="token-summary">
+            <div class="token-row">
+              <span class="token-key">Typography</span>
+              <span class="token-val">System Sans (-apple-system), Menlo</span>
+            </div>
+            <div class="token-row">
+              <span class="token-key">Corner radius</span>
+              <span class="token-val">0px unrounded geometry</span>
+            </div>
+            <div class="token-row">
+              <span class="token-key">Max container</span>
+              <span class="token-val">1120px benchmark</span>
+            </div>
+            <div class="token-row">
+              <span class="token-key">Signature element</span>
+              <span class="token-val">Sparkline telemetry grid</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="palette-strip">
+              <span class="swatch" style="background:#000000;" title="Solid black (#000000)"></span>
+              <span class="swatch" style="background:#ffffff;" title="Pure white (#ffffff)"></span>
+              <span class="swatch" style="background:#eeeeee;" title="Header wash grey (#eeeeee)"></span>
+              <span class="swatch" style="background:#333333;" title="Charcoal (#333333)"></span>
+            </div>
+
+            <div class="action-row">
+              <a href="designs/systems-benchmark/example.html" class="btn btn-primary">Open live example</a>
+              <a href="designs/systems-benchmark/design.md" class="btn btn-secondary">Read specification</a>
+            </div>
+          </div>
+        </div>
+        <div class="design-visual">
+          <img src="designs/systems-benchmark/preview.png" alt="Systems benchmark interface preview">
+        </div>
+      </article>
+    </div>
+
+    <div class="guide-box">
+      <h3>Using specifications with AI agents</h3>
+      <p>
+        Every specification adheres strictly to Google's DESIGN.md format. To instruct an AI coding assistant to generate an interface in one of these aesthetics, pass the raw text of <code>design.md</code> directly into your session prompt:
+      </p>
+      <pre class="code-block">Follow the design tokens and layout rules in designs/broadsheet-audit/design.md to build this dashboard.</pre>
+    </div>
+  </main>
+
+  <footer>
+    <div>Released under the MIT License.</div>
+    <div><a href="https://github.com/arterialist/design-specs">View source on GitHub</a></div>
+  </footer>
+</body>
+</html>

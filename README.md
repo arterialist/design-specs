@@ -2,6 +2,8 @@
 
 A public catalogue of reusable interface design systems. Each specification captures visual rules, tokens, layout constraints, and component behaviors well enough to reproduce an interface in that exact aesthetic.
 
+[Browse the live catalogue on GitHub Pages](https://arterialist.github.io/design-specs/)
+
 All entries follow [Google's DESIGN.md format specification](https://raw.githubusercontent.com/google-labs-code/design.md/main/docs/spec.md), combining machine-readable YAML frontmatter tokens with structured human guidance.
 
 ## Design philosophy
