@@ -20,7 +20,7 @@ Every design in this catalogue enforces strict design discipline to eliminate AI
 | Design | Visual character | Specification | Example | Preview |
 | --- | --- | --- | --- | --- |
 | Paper dynamics | Warm paper texture, fine rules, restrained wireframe plots, and readable measurements | [design.md](designs/paper-dynamics/design.md) | [example.html](designs/paper-dynamics/example.html) | [preview.png](designs/paper-dynamics/preview.png) |
-| Broadsheet audit | High-contrast editorial broadsheet with serif body text, ruled data tables, summary strips, execution waterfalls, and restrained semantic tinting | [design.md](designs/broadsheet-audit/design.md) | [example.html](designs/broadsheet-audit/example.html) | [preview.png](designs/broadsheet-audit/preview.png) |
+| Broadsheet audit | High-contrast editorial broadsheet with serif body text, ruled data tables, summary strips, execution waterfalls, restrained semantic tinting, and decision blocks for reports the reader answers in place | [design.md](designs/broadsheet-audit/design.md) | [example.html](designs/broadsheet-audit/example.html) | [preview.png](designs/broadsheet-audit/preview.png) |
 | Systems benchmark | High-density system sans-serif benchmark report with shaded tabular data, executive callout boxes, and responsive sparkline telemetry grids | [design.md](designs/systems-benchmark/design.md) | [example.html](designs/systems-benchmark/example.html) | [preview.png](designs/systems-benchmark/preview.png) |
 
 ## Previews
@@ -63,6 +63,10 @@ designs/
     example.html   # Self-contained HTML reference implementation
     preview.png    # Rendered screenshot of the reference implementation
     assets/        # Optional textures, patterns, and visual media
+skills/
+  <skill-name>/
+    SKILL.md       # Claude skill that builds pages from a design
+    scripts/       # Helpers the skill runs
 ```
 
 The document follows the eight canonical sections:
@@ -76,6 +80,18 @@ The document follows the eight canonical sections:
 8. Do's and Don'ts
 
 Specifications exclude project-specific logic, private API routes, and backend code. They contain only the reusable visual system.
+
+## Skills
+
+Claude skills that build pages from these designs live under `skills/`. Install one by linking its folder into your skills directory:
+
+```bash
+ln -s "$PWD/skills/interactive-review" ~/.claude/skills/interactive-review
+```
+
+| Skill | What it builds | Design |
+| --- | --- | --- |
+| [interactive-review](skills/interactive-review/SKILL.md) | A local report the reader answers in place. Each item gets Apply, Skip or Discuss and a notes box; a local server saves the answers, and the agent replies under each item. | Broadsheet audit |
 
 ## Contributing
 

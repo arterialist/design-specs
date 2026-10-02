@@ -246,6 +246,87 @@
       max-width: 28ch;
     }
 
+    .dec {
+      border: 1px solid var(--primary);
+      padding: 0.4rem 0.6rem;
+      margin: 0 0 1rem;
+    }
+
+    .opt {
+      display: inline-block;
+      margin-right: 1.2rem;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .dec textarea {
+      display: block;
+      width: 100%;
+      margin-top: 0.4rem;
+      border: 1px solid var(--primary);
+      border-radius: 0;
+      padding: 0.3rem 0.4rem;
+      font: 13px/1.4 var(--serif);
+      background: #ffffff;
+    }
+
+    .dec textarea:focus,
+    button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 0;
+    }
+
+    .actions {
+      border: 2px solid var(--primary);
+      padding: 0.5rem 0.7rem;
+      margin: 1rem 0;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      font: 14px var(--serif);
+      background: var(--primary);
+      color: #ffffff;
+      border: 1px solid var(--primary);
+      border-radius: 0;
+      padding: 0.35rem 0.9rem;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #ffffff;
+      color: var(--primary);
+    }
+
+    button:hover {
+      text-decoration: underline;
+    }
+
+    .status {
+      font-size: 0.88rem;
+      color: var(--charcoal);
+    }
+
+    .replies {
+      border-top: 1px solid var(--primary);
+      margin-top: 0.5rem;
+      padding-top: 0.3rem;
+      font-size: 0.86rem;
+    }
+
+    .replies:empty {
+      display: none;
+    }
+
+    .reply .at {
+      font-size: 0.78rem;
+      color: var(--charcoal);
+      margin-right: 0.4rem;
+    }
+
     @media (max-width: 900px) {
       .strip { grid-template-columns: repeat(3, 1fr); }
       .tl { grid-template-columns: 120px repeat(6, 1fr); }
@@ -264,6 +345,7 @@
     <a href="#matrix">Service matrix</a>
     <a href="#waterfall">Execution waterfall</a>
     <a href="#pipeline">Pipeline stages</a>
+    <a href="#decisions">Decisions</a>
     <a href="#details">Raw inventory</a>
   </nav>
 
@@ -450,6 +532,39 @@
     </div>
   </div>
 
+  <h2 id="decisions">Decisions</h2>
+  <p class="caption">Pick an option on each item, add notes where needed, then send. Replies from the report author appear under each item.</p>
+  <div class="actions">
+    <button id="send">Send decisions</button>
+    <button class="secondary" id="copy">Copy as text</button>
+    <span class="status" id="status">Not sent yet.</span>
+  </div>
+
+  <h3 id="D1">D1. Vector similarity search P95</h3>
+  <div class="tw">
+    <table class="kv">
+      <tbody>
+        <tr><td>Found</td><td>P95 is 3,410 ms against a 1,500 ms budget; 1.82% of calls fail.</td></tr>
+        <tr><td>Proposed</td><td>Cap candidate sets at 200 and move the index to the warm pool.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="dec" data-id="D1">
+    <label class="opt"><input type="radio" name="D1" value="apply"> Apply</label>
+    <label class="opt"><input type="radio" name="D1" value="skip"> Skip</label>
+    <label class="opt"><input type="radio" name="D1" value="discuss"> Discuss</label>
+    <textarea name="D1-note" rows="2" placeholder="Notes for this item"></textarea>
+    <div class="replies"><div class="reply"><span class="at">Author 13:20</span>The warm pool has 6 free nodes; the move needs no new capacity.</div></div>
+  </div>
+
+  <h3 id="D2">D2. Pool for ap-southeast</h3>
+  <div class="dec" data-id="D2">
+    <label class="opt"><input type="radio" name="D2" value="raise"> Raise the limit from 50 to 80</label>
+    <label class="opt"><input type="radio" name="D2" value="keep"> Keep 50 and shed load at the router</label>
+    <textarea name="D2-note" rows="2" placeholder="Notes for this item"></textarea>
+    <div class="replies"></div>
+  </div>
+
   <h2>Audit disclosures</h2>
   <div id="details">
     <details>
@@ -501,5 +616,25 @@ STORAGE_BACKEND=postgresql://cluster-primary.internal:5432/telemetry
 READ_ONLY_GUARD=active (write operations blocked)</pre>
     </details>
   </div>
+  <script>
+    const status = document.getElementById('status');
+    document.addEventListener('input', () => { status.textContent = 'Unsent changes.'; });
+    function answers() {
+      return [...document.querySelectorAll('.dec')].map((block) => {
+        const id = block.dataset.id;
+        const choice = block.querySelector('input:checked');
+        const note = block.querySelector('textarea').value.trim();
+        return `${id}: ${choice ? choice.value : '-'}${note ? ' | ' + note : ''}`;
+      });
+    }
+    document.getElementById('send').onclick = () => {
+      status.textContent = 'Sent ' + new Date().toTimeString().slice(0, 5) + '.';
+    };
+    document.getElementById('copy').onclick = async () => {
+      const lines = answers();
+      await navigator.clipboard.writeText(lines.join('\n'));
+      status.textContent = 'Copied ' + lines.length + ' answers.';
+    };
+  </script>
 </body>
 </html>

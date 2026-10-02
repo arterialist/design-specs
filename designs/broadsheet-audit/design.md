@@ -76,6 +76,16 @@ typography:
     fontSize: 11px
     fontWeight: 400
     lineHeight: 1.2
+  control:
+    fontFamily: 'Georgia, "Times New Roman", serif'
+    fontSize: 14px
+    fontWeight: 400
+    lineHeight: 1.3
+  notes:
+    fontFamily: 'Georgia, "Times New Roman", serif'
+    fontSize: 13px
+    fontWeight: 400
+    lineHeight: 1.4
 rounded:
   none: 0px
 spacing:
@@ -107,6 +117,37 @@ components:
   waterfall-trace-network:
     backgroundColor: "{colors.surface-intermediate}"
     rounded: "{rounded.none}"
+  decision-block:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.on-surface}"
+    rounded: "{rounded.none}"
+  choice-control:
+    textColor: "{colors.on-surface}"
+    typography: "{typography.control}"
+  notes-field:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.on-surface}"
+    typography: "{typography.notes}"
+    rounded: "{rounded.none}"
+  action-bar:
+    backgroundColor: "{colors.surface}"
+    rounded: "{rounded.none}"
+  button-primary:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.control}"
+    rounded: "{rounded.none}"
+  button-secondary:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.on-surface}"
+    typography: "{typography.control}"
+    rounded: "{rounded.none}"
+  status-line:
+    textColor: "{colors.neutral-variant}"
+    typography: "{typography.meta}"
+  reply-thread:
+    textColor: "{colors.on-surface}"
+    typography: "{typography.table}"
 ---
 
 # Broadsheet audit
@@ -189,6 +230,8 @@ The design relies entirely on standard system serif and monospace font stacks wi
 | Code & pre | Monospace | 11.9px / 1.4 | 400 normal |
 | Timeline bar | Serif | 10.4px / 1.2 | 400 normal |
 | Waterfall label | Monospace | 11px / 1.2 | 400 normal |
+| Control label and button | Serif | 14px / 1.3 | 400 normal |
+| Notes field | Serif | 13px / 1.4 | 400 normal |
 
 Headings remain normal weight (`font-weight: 400`), distinguished by scale and solid black bottom rules rather than heavy bolding. Subheadings use bold serif at 14.2px for crisp inline demarcation. Eliminate em dashes, marketing buzzwords, and promotional adverbs throughout the microcopy.
 
@@ -204,6 +247,8 @@ The document follows a single-column broadsheet flow centered within a container
 6. **Narrative & structured tables:** Alternating analysis prose, dense data tables, and latency benchmarks.
 7. **Execution waterfalls:** SVG timeline charts tracking hierarchical execution spans.
 8. **Collapsible details:** Native `<details>` containers for supplementary inventories and raw audits.
+
+A page the reader answers in place gets an action bar under a short "how to answer" note, before the first data section. Each item it asks about reads, top to bottom: the heading with the item id, the key-value table, the decision block.
 
 The page container has `2.5rem` to `3rem` top and bottom margins and `1.5rem` horizontal padding.
 
@@ -318,6 +363,52 @@ Mermaid or SVG process flows rendered in pure black and white:
 - Container: Inline row with `11.9px` text and `1rem` right margins.
 - Swatches (`.sw`): `12px × 10px` or `14px × 10px` rectangular blocks with `1px solid #000000` border and `4px` right margin.
 
+### Decision block
+
+The answer area for one item on a page the reader responds to. It sits directly under the item's key-value table:
+- Container: `border: 1px solid #000000; padding: 0.4rem 0.6rem; margin: 0 0 1rem`.
+- Anatomy, top to bottom: choice row, notes field, reply thread.
+- One block per item. The item heading carries a short stable id (`P3`, `E1`) that the reply thread and any saved answer use.
+
+### Choice control
+
+- Native radio inputs, each followed by its label text, in one inline row: `margin-right: 1.2rem; font-size: 14px`.
+- Options are short verbs for an item (Apply, Skip, Discuss) or one full statement per option for a single-choice decision.
+- The selected state is the native radio mark. No color change, no filled pill, no switch.
+
+### Notes field
+
+- Full-width `<textarea>`: `border: 1px solid #000000; border-radius: 0; padding: 0.3rem 0.4rem; margin-top: 0.4rem; font: 13px/1.4 Georgia, serif; background: #ffffff`.
+- Placeholder names what to write ("Notes for this item").
+- Focus: `outline: 2px solid #000000; outline-offset: 0`.
+
+### Action bar
+
+One per page:
+- Container: `border: 2px solid #000000; padding: 0.5rem 0.7rem; margin: 1rem 0; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center`.
+- Holds the primary button (send the answers), the secondary button (copy the answers as plain text), and the status line, in that order.
+
+### Buttons
+
+- Primary: `background: #000000; color: #ffffff; border: 1px solid #000000; border-radius: 0; padding: 0.35rem 0.9rem; font: 14px Georgia, serif`.
+- Secondary: same box, `background: #ffffff; color: #000000`.
+- Hover: underline the label. No color shift, no shadow, no movement.
+- Disabled: `color: #555555; border-color: #555555`; the primary fill becomes `#555555`.
+- Labels are verbs that name the result, such as "Send decisions" and "Copy as text".
+
+### Status line
+
+- Plain sentence beside the buttons, `12.8px` serif, charcoal (`#333333`).
+- States: "Not sent yet.", "Unsent changes.", "Sent 13:14.", "Server not reachable. Use Copy as text."
+- The status line is the only feedback. No toasts, spinners, modals or banners.
+
+### Reply thread
+
+Answers from the report's author, shown inside the decision block they answer:
+- Container: `border-top: 1px solid #000000; margin-top: 0.5rem; padding-top: 0.3rem; font-size: 12.5px`. Hidden while empty.
+- Each reply: author and time first in caption style (`11.3px`, `#333333`), then the text. Oldest first.
+- Replies are plain text. A page-wide thread uses the same style directly under the action bar.
+
 ## Do's and Don'ts
 
 - **Do** present verified metrics, error rates, and latency numbers directly in ruled tables and summary strips.
@@ -335,3 +426,6 @@ Mermaid or SVG process flows rendered in pure black and white:
 - **Don't** import web fonts; rely on system serif (`Georgia, "Times New Roman", serif`) and monospace stacks.
 - **Don't** use curved bezier lines in architectural diagrams; use orthogonal linear connectors.
 - **Don't** add animated entrances, transitions, or hover movements.
+- **Do** put each decision block directly under the item it decides, and give the item a short id the answer and the replies reuse.
+- **Do** report send state in the status line as a sentence with a time.
+- **Don't** use toggles, switches, segmented pills, colored buttons, toasts or modals for decisions.
