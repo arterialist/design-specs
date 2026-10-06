@@ -10,7 +10,7 @@ All entries follow [Google's DESIGN.md format specification](https://raw.githubu
 
 Every design in this catalogue enforces strict design discipline to eliminate AI slop:
 
-- **Data over prose:** Multi-paragraph narrative summaries are replaced by dense data tables, execution waterfalls, metric strips, and sparklines.
+- **Data over prose:** Multi-paragraph narrative summaries are replaced by dense data tables, execution waterfalls, metric strips, and telemetry charts.
 - **Instrument-grade clarity:** Every UI element serves an analytical purpose. Decorative icons, glowing trace effects, marketing banners, and functionless status pills are prohibited.
 - **Precision microcopy:** Labels and notes state concrete mechanisms, physical units, and numerical bounds. Conversational throat-clearing, greeting banners, and em dashes are eliminated.
 - **Zero remote dependencies:** Type stacks rely entirely on native system fonts and local assets, avoiding third-party font downloads and runtime bloat.
@@ -21,7 +21,7 @@ Every design in this catalogue enforces strict design discipline to eliminate AI
 | --- | --- | --- | --- | --- |
 | Paper dynamics | Warm paper texture, fine rules, restrained wireframe plots, and readable measurements | [design.md](designs/paper-dynamics/design.md) | [example.html](designs/paper-dynamics/example.html) | [preview.png](designs/paper-dynamics/preview.png) |
 | Broadsheet audit | High-contrast editorial broadsheet with serif body text, ruled data tables, summary strips, execution waterfalls, restrained semantic tinting, and decision blocks for reports the reader answers in place | [design.md](designs/broadsheet-audit/design.md) | [example.html](designs/broadsheet-audit/example.html) | [preview.png](designs/broadsheet-audit/preview.png) |
-| Systems benchmark | High-density system sans-serif benchmark report with shaded tabular data, executive callout boxes, and responsive sparkline telemetry grids | [design.md](designs/systems-benchmark/design.md) | [example.html](designs/systems-benchmark/example.html) | [preview.png](designs/systems-benchmark/preview.png) |
+| Systems benchmark | High-density system sans-serif benchmark report with shaded tabular data, executive callout boxes, and responsive grids of axis-labelled telemetry charts | [design.md](designs/systems-benchmark/design.md) | [example.html](designs/systems-benchmark/example.html) | [preview.png](designs/systems-benchmark/preview.png) |
 
 ## Previews
 
