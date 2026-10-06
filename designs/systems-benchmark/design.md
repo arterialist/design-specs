@@ -40,6 +40,11 @@ typography:
     fontSize: 11.2px
     fontWeight: 400
     lineHeight: 1.3
+  legend:
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+    fontSize: 11.2px
+    fontWeight: 400
+    lineHeight: 1.3
   code:
     fontFamily: 'Menlo, Consolas, monospace'
     fontSize: 12.6px
@@ -62,6 +67,9 @@ components:
     rounded: "{rounded.none}"
   sparkline-card:
     backgroundColor: "{colors.surface}"
+    rounded: "{rounded.none}"
+  chart-legend:
+    textColor: "{colors.neutral-variant}"
     rounded: "{rounded.none}"
 ---
 
@@ -87,7 +95,7 @@ The palette is strictly neutral, focusing on ink contrast and subtle grey surfac
 
 ### Neutral & surface
 - **Header Wash Grey (`#eeeeee`):** Light neutral fill for table header rows (`th`).
-- **Charcoal (`#333333`):** Small subtitles, captions, and secondary notes.
+- **Charcoal (`#333333`):** Small subtitles, captions, chart legends, and secondary notes.
 
 | Token | Name | Value | Role |
 | --- | --- | --- | --- |
@@ -96,7 +104,7 @@ The palette is strictly neutral, focusing on ink contrast and subtle grey surfac
 | `surface` | Pure white | `#ffffff` | Callout box and card surfaces |
 | `surface-container` | Header wash grey | `#eeeeee` | Shaded table header backgrounds |
 | `outline` | Solid rule | `#000000` | Borders for tables, boxes, and sparkline frames |
-| `neutral-variant` | Charcoal | `#333333` | Subtitles, figure labels, and footnotes |
+| `neutral-variant` | Charcoal | `#333333` | Subtitles, figure labels, chart legends, and footnotes |
 
 Do not add colored status pills, gradient fills, or accent colors. High-contrast monochrome rules ensure clean reproduction across screens and print.
 
@@ -115,6 +123,7 @@ The typography uses the operating system's native sans-serif stack paired with a
 | Table text | Sans | 14px / 1.4 | 400 normal, tabular numbers |
 | Table caption | Sans | 14px / 1.4 | 400 normal, italic |
 | Figure caption | Sans | 11.2px / 1.3 | 400 normal |
+| Chart legend | Sans | 11.2px / 1.3 | 400 normal, charcoal (`#333333`) |
 | Small footnote | Sans | 11.5px / 1.3 | 400 normal, charcoal (`#333333`) |
 | Code & pre | Monospace | 12.6px / 1.4 | 400 normal |
 
@@ -128,7 +137,7 @@ The document centers inside a `1120px` max-width container with `2rem` vertical 
 2. **Executive callout box:** Ruled container highlighting top-line speedups and resource reductions.
 3. **Context & narrative:** Structured sections with an 80-character reading line limit (`max-width: 80ch`).
 4. **Benchmark summary tables:** Dense data tables with right-aligned numeric figures.
-5. **Sparkline telemetry grid:** Multi-column responsive grid of small-multiples resource charts.
+5. **Sparkline telemetry grid:** Multi-column responsive grid of small-multiples resource charts, each with a legend under its frame.
 6. **Detailed analysis lists:** Numbered or bulleted findings with bold inline lead-ins.
 7. **Collapsible details:** Native `<details>` tags housing secondary datasets and raw runs.
 
@@ -192,7 +201,20 @@ A small-multiples grid of compact SVG sparklines tracking memory, CPU, or latenc
   - Border: `1px solid #000000; display: block; margin-top: 2px`.
   - Background: Pure white (`#ffffff`).
   - Plot stroke: `polyline` with `fill="none" stroke="#000000" stroke-width="1"`.
+  - Plot inset: 4px top and bottom. The low end of the y range sits at `y=52` and the high end at `y=4`.
+- Legend: Required under every frame. See Chart legend.
 - Multi-run comparison: Supports placing multiple figures side-by-side to visually identify memory leaks, plateaus, and spikes.
+
+### Chart legend
+
+A row under every chart frame that names the trace, its unit, and both axis ranges. A reader must be able to read the scale of a chart from the legend alone, without the caption, the surrounding prose, or a hover state:
+- Container: `p.legend` inside the `figure`, directly after the SVG frame. `display: flex; flex-wrap: wrap; gap: 0 12px; margin: 2px 0 0`.
+- Text: `11.2px / 1.3`, charcoal (`#333333`), tabular numbers.
+- Trace key (`svg.key`): `width="24" height="8" viewBox="0 0 24 8"` holding one `line` from `0,4` to `24,4` drawn in the trace's own stroke (`stroke="#000000" stroke-width="1"`). `vertical-align: middle; margin-right: 4px`. The measure and its unit follow the key, such as `RSS, MB`.
+- Y range: The values at the low and high ends of the plot inset, written `y 0 to 900`.
+- X range: The first and last sample, written `x 0 to 151 s` or `x Aug 1 to Oct 5`.
+- One key per trace, in draw order. A key repeats its trace's stroke exactly. A line is never keyed with a filled swatch.
+- Shared range: Figures that show the same measure for different runs use one y range, so heights compare across the grid. Figures that show different measures state their own range.
 
 ### Narrative notes blocks
 
@@ -221,6 +243,7 @@ Native disclosure element for raw logs and secondary runs:
 - **Do** use native system sans-serif typography (`-apple-system, sans-serif`) for crisp, platform-native rendering.
 - **Do** set table numerals to tabular numbers (`tabular-nums`) and right-align all metric values.
 - **Do** wrap figures in a responsive CSS grid with `minmax(340px, 1fr)` for small-multiples telemetry.
+- **Do** put a legend under every chart frame that names the trace, its unit, and the y and x ranges.
 - **Do** use 0px unrounded corners across all boxes, tables, and sparkline charts.
 - **Do** use light grey `#eeeeee` solely on table header backgrounds to ground data columns.
 - **Don't** write subjective performance claims ('runs quickly', 'significantly faster') without including the exact benchmark delta.
@@ -231,3 +254,4 @@ Native disclosure element for raw logs and secondary runs:
 - **Don't** import third-party web font packages; rely on system font stacks.
 - **Don't** center-align tabular numbers or mix left and right alignment within a single numeric column.
 - **Don't** use smoothed curves or filled areas under sparklines; use simple 1px polyline strokes.
+- **Don't** publish a chart whose unit or scale can only be found in the caption or the surrounding prose.
